@@ -199,6 +199,18 @@ class InsertUpdateTest(TestCase):
         insert_or_update_many(TestModelA, set2, keys=['b'])
         self.assertEqual(2000, TestModelA.objects.all().count())
 
+    def test_returned_results_insert_update(self):
+        # Expected to fail in SQLite (too many variables)
+        set1 = [TestModelA(a="Test", b=i, c=1) for i in range(1000)]
+        insert_many(TestModelA, set1)
+
+        set2 = [TestModelA(a="Test", b=i, c=2) for i in range(500, 2000)]
+        inserted, updated = insert_or_update_many(TestModelA, set2, keys=['b'])
+        self.assertEqual(1000, len(inserted))
+        self.assertEqual(500, len(updated))
+        self.assertTrue(isinstance(inserted[0], dict))
+        self.assertTrue(isinstance(updated[0], dict))
+
     def test_duplicate_insert_update(self):
         set1 = [
             TestModelA(a="Test1", b=1, c=1),
